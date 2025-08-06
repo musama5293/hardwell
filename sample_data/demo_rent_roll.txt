@@ -1,0 +1,14 @@
+DEMO RENT ROLL - Bolden Heights Apartments
+
+This is a demo PDF file for testing the upload functionality.
+
+Property: Bolden Heights Apartments
+Address: 3350 Mount Gilead Rd, Atlanta, GA 30311
+
+Unit Information:
+- 100 units total
+- Mix of 1BR, 2BR, and 3BR units
+- Average rent: $800/month
+- 95% occupancy
+
+This file would contain the actual rent roll data in a real scenario.

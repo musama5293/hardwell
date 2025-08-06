@@ -1,0 +1,160 @@
+🧠 Hardwell Capital Underwriting Rulebook
+Instructions for Developer / AI Engineer / Underwriting Automation System
+Objective: Build a system that takes in raw rent rolls, T12s, and optional offering memorandums and outputs a clean, professional loan package PDF using the underwriting standards below. This package will be used for refinancing multifamily properties.
+________________________________________
+🔁 INPUT DOCUMENTS
+•	Rent Roll: Excel or PDF. If multiple rent rolls are provided, always choose the one with the earliest date.
+o	If in PDF, convert to Excel.
+o	Strip all unnecessary columns (deposits, tenant names, balances owed).
+•	T12 / P&L: Excel or PDF.
+o	Always cut off the P&L at Net Operating Income (NOI).
+o	Do not include:
+	Depreciation
+	Interest expense
+	CapEx or below-the-line “other” items
+•	Offering Memorandum (OM): Optional. If included, pull rent roll and expense info from OM if no other files are available.
+________________________________________
+📊 INCOME RULES
+•	Rental Income:
+o	Use the current rents from the rent roll.
+o	If there are vacant units, calculate their income using the average rent of that unit type (not market rent).
+o	Include a rent analysis tab:
+	Average rent per unit type
+	Rent per square foot (PSF)
+	Flag units that are significantly underpriced (30%+ under average)
+o	If square footage is missing, ask user to input SF by unit type.
+•	Other Income:
+o	Use the actual trailing 12-month total.
+o	If missing, flag and prompt for clarification.
+•	Occupancy Trending:
+o	If T3, T2, or T4 income is higher than the T12 and trending upward, use that.
+o	Never use shorter periods if the income dipped and then spiked — only use when there’s a consistent uptrend.
+________________________________________
+💸 EXPENSE RULES
+•	Vacancy:
+o	Use 5% of Gross Potential Income or actuals (whichever is higher).
+•	Property Taxes:
+o	For refinance: increase actuals by 7.5%.
+o	For acquisition: calculate using millage rate if known.
+•	Insurance: Increase actuals by 5%.
+•	Utilities (Electricity, Water, Sewer, Trash):
+o	Increase actuals by 2%.
+o	If any month is abnormally high (a spike), remove it before calculating.
+•	Repairs & Maintenance (R&M):
+o	Minimum thresholds by age of property:
+	<10 years old: $500/unit
+	10–20 yrs: $600
+	20–30 yrs: $700
+	30–40 yrs: $800
+	40–50 yrs: $900
+	50+ yrs: $1,000
+o	Cap at $1,500/unit. Carve out excess if higher.
+•	Payroll: Use same rules as R&M.
+•	Professional Fees / General Administrative:
+o	Minimum: $1,000 total.
+o	Maximum: $400/unit.
+•	Management Fee (based on gross income):
+o	≤ $500K: 5%
+o	$500K–$750K: 4.5%
+o	$750K–$1M: 4%
+o	$1M–$1.5M: 3.5%
+o	$1.5M–$2M: 3%
+o	$2M: 2.5%
+•	Replacement Reserves: Always $250/unit.
+•	Minimum Expense Ratio: Total expenses must be at least 28% of Effective Gross Income (EGI).
+o	Raise line items or use adjusted caps to meet this threshold if needed.
+________________________________________
+🏗️ UNDERWRITING STRUCTURE & OUTPUT FORMAT
+Tabs Required:
+1.	Clean Rent Roll
+2.	Clean T12 (cut off at NOI)
+3.	Underwriting Summary:
+o	Columns:
+	Line Item
+	$ Amount
+	% of EGI
+	Notes (Explain every override or adjustment from raw docs)
+4.	(Bridge loans only):
+o	Pro Forma Rent Roll
+o	Pro Forma Income Statement
+o	Sources & Uses
+o	Construction Budget (from OM or manual input)
+Final Output:
+•	Auto-generate 1 polished PDF of the underwriting package.
+•	Allow for manual tweaking of any line item in a master template before final export.
+________________________________________
+🔍 DEEP LOGIC / DECISION-MAKING
+•	If T12 is inconsistent, prefer trailing 2–6 months if trending upward.
+•	If income is erratic, do not switch to T3 just because the last month looked good.
+•	Flag missing or irregular data:
+o	If square footage is missing, ask.
+o	If rent roll lacks pricing, ask.
+o	If income statement includes “other” categories after NOI, cut them out.
+•	Highlight CapEx and other one-time expenses (e.g., flooring, appliances, major plumbing) and move to Notes.
+•	If given multiple files, the system should choose the best one and ignore duplicates or bloated tabs.
+________________________________________
+💰 LOAN SIZING & RATE RULES
+Use Net Operating Income ÷ Cap Rate (manual or GHL) for Property Value.
+Loan size = Lesser of:
+•	Max LTV
+•	Min DSCR
+•	Min Debt Yield (if required)
+________________________________________
+🧮 LOAN TYPES & CONSTRAINTS
+1. FANNIE / FREDDIE (AGENCY)
+•	Max LTV: 75%
+•	Min DSCR: 1.25x
+•	Min Debt Yield: 8%
+•	Amortization: 30-year
+•	Interest Rate:
+o	≥ $6M: 10-Year UST + 150 bps
+o	< $6M: 10-Year UST + 200 bps
+•	Optional Step-Down Prepay: +50 bps to rate
+•	Tier Pricing:
+o	Tier 2: 75% LTV, 1.25 DSCR → base rate
+o	Tier 3: 65% LTV, 1.35 DSCR → -25bps
+o	Tier 4: 55% LTV, 1.45 DSCR → -50bps
+2. CMBS
+•	Max LTV: 75%
+•	Min DSCR: 1.25x
+•	Min Debt Yield: 9%
+•	Interest-Only (No amortization)
+•	Interest Rate: 10-Year UST + 300 bps
+•	Min Loan: $5M
+3. DEBT FUND (BRIDGE, VALUE-ADD)
+•	Min Loan: $20M
+•	DSCR: 0.95x
+•	Amortization: 25-Year
+•	Interest Rate: 10-Year UST + 150 bps
+________________________________________
+📈 TREASURY INDEX SELECTION
+Allow user/system to toggle between:
+•	5-Year Treasury
+•	7-Year Treasury
+•	10-Year Treasury (default)
+•	15-Year (average of 10Y and 20Y)
+•	20-Year Treasury
+•	30-Year Treasury
+________________________________________
+🔄 GOHIGHLEVEL (GHL) INTEGRATION
+Eventually, system should auto-pull the following from GHL:
+•	Property Name
+•	Property Address
+•	City / State / ZIP
+•	Property Type
+•	Unit Count
+•	Transaction Type
+•	UPB
+•	Cap Rate
+•	PIN
+For testing purposes, these can be hard-coded or manually entered.
+________________________________________
+✅ SUCCESS LOOKS LIKE:
+•	User uploads a rent roll, T12, and/or OM
+•	System extracts data, applies all rules above
+•	Rents and other income are correctly calculated
+•	Expenses are adjusted to match underwriting floors and ceilings
+•	Output includes rent analysis, clean rent roll, clean T12, underwriting doc
+•	PDF is generated and ready to be sent to a lender
+•	Manual overrides allowed before export
+

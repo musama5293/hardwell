@@ -1,0 +1,874 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Real Estate Underwriting AI</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .progress-bar {
+            transition: width 0.5s ease-in-out;
+        }
+        .step-indicator {
+            transition: all 0.3s ease;
+        }
+        .step-active {
+            background: #4f46e5;
+            color: white;
+            transform: scale(1.1);
+        }
+        .step-completed {
+            background: #10b981;
+            color: white;
+        }
+        .upload-zone {
+            border: 2px dashed #cbd5e0;
+            transition: all 0.3s ease;
+        }
+        .upload-zone:hover {
+            border-color: #4f46e5;
+            background-color: #f7fafc;
+        }
+        .upload-zone.drag-over {
+            border-color: #4f46e5;
+            background-color: #edf2f7;
+        }
+        .spinning {
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        .slide-in {
+            animation: slideIn 0.5s ease-out;
+        }
+        @keyframes slideIn {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Header -->
+    <header class="gradient-bg shadow-lg">
+        <div class="container mx-auto px-6 py-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <i class="fas fa-building text-white text-2xl"></i>
+                    <h1 class="text-white text-2xl font-bold">Real Estate Underwriting AI</h1>
+                </div>
+                <div class="text-white text-sm">
+                    <i class="fas fa-robot mr-2"></i>
+                    AI-Powered Analysis
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-6 py-8">
+        <!-- Upload Section -->
+        <div id="uploadSection" class="mb-8">
+            <div class="bg-white rounded-lg shadow-lg p-6">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6 flex items-center">
+                    <i class="fas fa-upload mr-3 text-indigo-600"></i>
+                    Upload Documents
+                </h2>
+                
+                <!-- Property Information Form -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Property Name</label>
+                        <input type="text" id="propertyName" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="e.g., Bolden Heights Apartments">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Property Address</label>
+                        <input type="text" id="propertyAddress" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="e.g., 123 Main St, City, State">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Transaction Type</label>
+                        <select id="transactionType" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            <option value="refinance">Refinance</option>
+                            <option value="purchase">Purchase</option>
+                            <option value="construction">Construction</option>
+                        </select>
+                    </div>
+                    <div class="flex items-center">
+                        <input type="checkbox" id="bridgeLoan" class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded">
+                        <label for="bridgeLoan" class="ml-2 block text-sm text-gray-900">Bridge Loan (Pro Forma Required)</label>
+                    </div>
+                </div>
+
+                <!-- File Upload Zones -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    <!-- Rent Roll Upload -->
+                    <div class="bg-blue-50 rounded-lg p-4">
+                        <h3 class="text-lg font-semibold text-blue-800 mb-3 flex items-center">
+                            <i class="fas fa-home mr-2"></i>
+                            Rent Roll Documents
+                        </h3>
+                        <div id="rentRollZone" class="upload-zone border-2 border-dashed border-blue-300 rounded-lg p-6 text-center cursor-pointer bg-white hover:bg-blue-50">
+                            <i class="fas fa-file-upload text-2xl text-blue-400 mb-2"></i>
+                            <p class="text-sm text-blue-600 mb-1">Drop rent roll files here</p>
+                            <p class="text-xs text-blue-500">PDF format preferred</p>
+                            <input type="file" id="rentRollInput" multiple accept=".pdf" class="hidden">
+                        </div>
+                        <div id="rentRollFiles" class="mt-3 space-y-2"></div>
+                    </div>
+
+                    <!-- T12 Upload -->
+                    <div class="bg-green-50 rounded-lg p-4">
+                        <h3 class="text-lg font-semibold text-green-800 mb-3 flex items-center">
+                            <i class="fas fa-chart-line mr-2"></i>
+                            T12 / Operating Statements
+                        </h3>
+                        <div id="t12Zone" class="upload-zone border-2 border-dashed border-green-300 rounded-lg p-6 text-center cursor-pointer bg-white hover:bg-green-50">
+                            <i class="fas fa-file-upload text-2xl text-green-400 mb-2"></i>
+                            <p class="text-sm text-green-600 mb-1">Drop T12 files here</p>
+                            <p class="text-xs text-green-500">PDF format preferred</p>
+                            <input type="file" id="t12Input" multiple accept=".pdf" class="hidden">
+                        </div>
+                        <div id="t12Files" class="mt-3 space-y-2"></div>
+                    </div>
+                </div>
+
+                <!-- Additional Documents (Optional) -->
+                <div class="bg-gray-50 rounded-lg p-4 mb-4">
+                    <h3 class="text-lg font-semibold text-gray-700 mb-3 flex items-center">
+                        <i class="fas fa-paperclip mr-2"></i>
+                        Additional Documents (Optional)
+                    </h3>
+                    <div id="additionalZone" class="upload-zone border-2 border-dashed border-gray-300 rounded-lg p-6 text-center cursor-pointer bg-white">
+                        <i class="fas fa-plus-circle text-2xl text-gray-400 mb-2"></i>
+                        <p class="text-sm text-gray-600 mb-1">Operating Memorandum, Leases, etc.</p>
+                        <p class="text-xs text-gray-500">PDF format preferred</p>
+                        <input type="file" id="additionalInput" multiple accept=".pdf" class="hidden">
+                    </div>
+                    <div id="additionalFiles" class="mt-3 space-y-2"></div>
+                </div>
+
+                <!-- Upload Summary -->
+                <div id="uploadSummary" class="hidden bg-indigo-50 rounded-lg p-4 mb-4">
+                    <h3 class="text-lg font-semibold text-indigo-800 mb-3 flex items-center">
+                        <i class="fas fa-list-check mr-2"></i>
+                        Upload Summary
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                        <div class="flex items-center justify-between">
+                            <span class="text-blue-700">Rent Roll Files:</span>
+                            <span id="rentRollCount" class="font-semibold text-blue-800">0</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-green-700">T12 Files:</span>
+                            <span id="t12Count" class="font-semibold text-green-800">0</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-gray-700">Additional Files:</span>
+                            <span id="additionalCount" class="font-semibold text-gray-800">0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Upload Button -->
+                <button id="uploadBtn" class="w-full bg-indigo-600 text-white py-3 px-4 rounded-md font-semibold hover:bg-indigo-700 transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                    <i class="fas fa-rocket mr-2"></i>
+                    Start Analysis
+                </button>
+            </div>
+        </div>
+
+        <!-- Progress Section -->
+        <div id="progressSection" class="hidden mb-8">
+            <div class="bg-white rounded-lg shadow-lg p-6">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6 flex items-center">
+                    <i class="fas fa-cogs mr-3 text-indigo-600"></i>
+                    Processing Documents
+                </h2>
+
+                <!-- Progress Steps -->
+                <div class="flex items-center justify-between mb-8">
+                    <div class="step-indicator w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold bg-gray-200 text-gray-600" data-step="1">1</div>
+                    <div class="flex-1 h-1 bg-gray-200 mx-2"></div>
+                    <div class="step-indicator w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold bg-gray-200 text-gray-600" data-step="2">2</div>
+                    <div class="flex-1 h-1 bg-gray-200 mx-2"></div>
+                    <div class="step-indicator w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold bg-gray-200 text-gray-600" data-step="3">3</div>
+                    <div class="flex-1 h-1 bg-gray-200 mx-2"></div>
+                    <div class="step-indicator w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold bg-gray-200 text-gray-600" data-step="4">4</div>
+                    <div class="flex-1 h-1 bg-gray-200 mx-2"></div>
+                    <div class="step-indicator w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold bg-gray-200 text-gray-600" data-step="5">5</div>
+                    <div class="flex-1 h-1 bg-gray-200 mx-2"></div>
+                    <div class="step-indicator w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold bg-gray-200 text-gray-600" data-step="6">6</div>
+                    <div class="flex-1 h-1 bg-gray-200 mx-2"></div>
+                    <div class="step-indicator w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold bg-gray-200 text-gray-600" data-step="7">7</div>
+                </div>
+
+                <!-- Progress Bar -->
+                <div class="bg-gray-200 rounded-full h-3 mb-4">
+                    <div id="progressBar" class="progress-bar bg-indigo-600 h-3 rounded-full" style="width: 0%"></div>
+                </div>
+
+                <!-- Current Step Info -->
+                <div class="text-center">
+                    <div id="currentStep" class="text-lg font-semibold text-gray-800 mb-2">Initializing...</div>
+                    <div id="stepMessage" class="text-sm text-gray-600 mb-4">Preparing to process documents</div>
+                    <div id="progressPercentage" class="text-2xl font-bold text-indigo-600">0%</div>
+                </div>
+
+                <!-- Loading Animation -->
+                <div class="flex justify-center mt-6">
+                    <i class="fas fa-cog text-indigo-600 text-3xl spinning"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Results Section -->
+        <div id="resultsSection" class="hidden">
+            <div class="bg-white rounded-lg shadow-lg p-6">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6 flex items-center">
+                    <i class="fas fa-chart-line mr-3 text-green-600"></i>
+                    Analysis Complete
+                </h2>
+
+                <!-- Success Message -->
+                <div class="bg-green-50 border border-green-200 rounded-md p-4 mb-6">
+                    <div class="flex items-center">
+                        <i class="fas fa-check-circle text-green-400 mr-3"></i>
+                        <div>
+                            <h3 class="text-sm font-medium text-green-800">Processing Completed Successfully!</h3>
+                            <p class="text-sm text-green-700 mt-1">Your underwriting analysis is ready for download.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Results Summary -->
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                    <div class="bg-blue-50 rounded-lg p-4">
+                        <div class="flex items-center">
+                            <i class="fas fa-building text-blue-600 text-2xl mr-3"></i>
+                            <div>
+                                <div class="text-sm text-blue-600 font-medium">Property</div>
+                                <div id="resultPropertyName" class="text-lg font-bold text-blue-800">--</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-green-50 rounded-lg p-4">
+                        <div class="flex items-center">
+                            <i class="fas fa-dollar-sign text-green-600 text-2xl mr-3"></i>
+                            <div>
+                                <div class="text-sm text-green-600 font-medium">NOI</div>
+                                <div id="resultNOI" class="text-lg font-bold text-green-800">--</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-purple-50 rounded-lg p-4">
+                        <div class="flex items-center">
+                            <i class="fas fa-percentage text-purple-600 text-2xl mr-3"></i>
+                            <div>
+                                <div class="text-sm text-purple-600 font-medium">Cap Rate</div>
+                                <div id="resultCapRate" class="text-lg font-bold text-purple-800">--</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-yellow-50 rounded-lg p-4">
+                        <div class="flex items-center">
+                            <i class="fas fa-flag text-yellow-600 text-2xl mr-3"></i>
+                            <div>
+                                <div class="text-sm text-yellow-600 font-medium">Flags</div>
+                                <div id="resultFlags" class="text-lg font-bold text-yellow-800">--</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Detailed Financial Metrics -->
+                <div class="bg-gray-50 rounded-lg p-6 mb-6">
+                    <h4 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                        <i class="fas fa-chart-line mr-2 text-indigo-600"></i>
+                        Financial Analysis
+                    </h4>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <div class="bg-white rounded p-3 border">
+                            <div class="text-sm text-gray-600">Property Value</div>
+                            <div id="resultPropertyValue" class="text-xl font-bold text-gray-900">--</div>
+                        </div>
+                        <div class="bg-white rounded p-3 border">
+                            <div class="text-sm text-gray-600">Cash Return</div>
+                            <div id="resultCashReturn" class="text-xl font-bold text-gray-900">--</div>
+                        </div>
+                        <div class="bg-white rounded p-3 border">
+                            <div class="text-sm text-gray-600">Expense Ratio</div>
+                            <div id="resultExpenseRatio" class="text-xl font-bold text-gray-900">--</div>
+                        </div>
+                        <div class="bg-white rounded p-3 border">
+                            <div class="text-sm text-gray-600">Gross Income</div>
+                            <div id="resultGrossIncome" class="text-xl font-bold text-gray-900">--</div>
+                        </div>
+                        <div class="bg-white rounded p-3 border">
+                            <div class="text-sm text-gray-600">Est. Units</div>
+                            <div id="resultUnits" class="text-xl font-bold text-gray-900">--</div>
+                        </div>
+                        <div class="bg-white rounded p-3 border">
+                            <div class="text-sm text-gray-600">Quality Score</div>
+                            <div id="resultQualityScore" class="text-xl font-bold text-gray-900">--</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Download Buttons -->
+                <div class="flex flex-col sm:flex-row gap-4">
+                    <button id="downloadExcel" class="flex-1 bg-green-600 text-white py-3 px-4 rounded-md font-semibold hover:bg-green-700 transition duration-200 flex items-center justify-center">
+                        <i class="fas fa-file-excel mr-2"></i>
+                        Download Excel Package
+                    </button>
+                    <button id="downloadPDF" class="flex-1 bg-red-600 text-white py-3 px-4 rounded-md font-semibold hover:bg-red-700 transition duration-200 flex items-center justify-center">
+                        <i class="fas fa-file-pdf mr-2"></i>
+                        Download PDF Report
+                    </button>
+                </div>
+
+                <!-- PDF Customization Section -->
+                <div class="mt-6 bg-gray-50 rounded-lg p-4 border border-gray-200">
+                    <h4 class="text-lg font-semibold text-gray-900 mb-3 flex items-center">
+                        <i class="fas fa-edit mr-2 text-blue-600"></i>
+                        Customize PDF Before Download
+                    </h4>
+                    <div class="space-y-3">
+                        <div>
+                            <label for="pdfNotes" class="block text-sm font-medium text-gray-700 mb-1">
+                                Additional Notes or Comments:
+                            </label>
+                            <textarea 
+                                id="pdfNotes" 
+                                rows="3" 
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                placeholder="Add any special notes, conditions, or comments to include in the PDF package..."
+                            ></textarea>
+                        </div>
+                        <button id="updatePDF" class="w-full bg-blue-600 text-white py-2 px-4 rounded-md font-medium hover:bg-blue-700 transition duration-200 flex items-center justify-center">
+                            <i class="fas fa-sync-alt mr-2"></i>
+                            Update PDF Package
+                        </button>
+                        <p class="text-xs text-gray-600 text-center">
+                            <i class="fas fa-info-circle mr-1"></i>
+                            Update the PDF with your custom notes before downloading
+                        </p>
+                    </div>
+                </div>
+
+                <!-- New Analysis Button -->
+                <button id="newAnalysis" class="w-full mt-4 bg-indigo-600 text-white py-3 px-4 rounded-md font-semibold hover:bg-indigo-700 transition duration-200 flex items-center justify-center">
+                    <i class="fas fa-plus mr-2"></i>
+                    Start New Analysis
+                </button>
+            </div>
+        </div>
+
+        <!-- Error Section -->
+        <div id="errorSection" class="hidden">
+            <div class="bg-white rounded-lg shadow-lg p-6">
+                <h2 class="text-2xl font-bold text-red-600 mb-6 flex items-center">
+                    <i class="fas fa-exclamation-triangle mr-3"></i>
+                    Processing Error
+                </h2>
+                
+                <div class="bg-red-50 border border-red-200 rounded-md p-4 mb-6">
+                    <div class="flex items-start">
+                        <i class="fas fa-times-circle text-red-400 mr-3 mt-1"></i>
+                        <div>
+                            <h3 class="text-sm font-medium text-red-800">Something went wrong</h3>
+                            <p id="errorMessage" class="text-sm text-red-700 mt-1">An error occurred during processing.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <button id="retryAnalysis" class="w-full bg-indigo-600 text-white py-3 px-4 rounded-md font-semibold hover:bg-indigo-700 transition duration-200 flex items-center justify-center">
+                    <i class="fas fa-redo mr-2"></i>
+                    Try Again
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-8 mt-12">
+        <div class="container mx-auto px-6 text-center">
+            <p>&copy; 2025 Real Estate Underwriting AI. Powered by advanced machine learning.</p>
+        </div>
+    </footer>
+
+    <script>
+        let currentSessionId = null;
+        let rentRollFiles = [];
+        let t12Files = [];
+        let additionalFiles = [];
+        let progressInterval = null;
+
+        // DOM elements
+        const rentRollZone = document.getElementById('rentRollZone');
+        const t12Zone = document.getElementById('t12Zone');
+        const additionalZone = document.getElementById('additionalZone');
+        const rentRollInput = document.getElementById('rentRollInput');
+        const t12Input = document.getElementById('t12Input');
+        const additionalInput = document.getElementById('additionalInput');
+        const uploadBtn = document.getElementById('uploadBtn');
+        const uploadSummary = document.getElementById('uploadSummary');
+
+        // Sections
+        const uploadSection = document.getElementById('uploadSection');
+        const progressSection = document.getElementById('progressSection');
+        const resultsSection = document.getElementById('resultsSection');
+        const errorSection = document.getElementById('errorSection');
+
+        // Initialize event listeners
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeUploadZones();
+            initializeButtons();
+        });
+
+        function initializeUploadZones() {
+            // Rent Roll Zone
+            setupUploadZone(rentRollZone, rentRollInput, 'rentRoll');
+            
+            // T12 Zone
+            setupUploadZone(t12Zone, t12Input, 't12');
+            
+            // Additional Zone
+            setupUploadZone(additionalZone, additionalInput, 'additional');
+        }
+
+        function setupUploadZone(zone, input, type) {
+            // File input change
+            input.addEventListener('change', function(e) {
+                handleFiles(e.target.files, type);
+            });
+
+            // Click to select files
+            zone.addEventListener('click', () => input.click());
+            
+            // Drag and drop
+            zone.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                zone.classList.add('drag-over');
+            });
+
+            zone.addEventListener('dragleave', function(e) {
+                e.preventDefault();
+                zone.classList.remove('drag-over');
+            });
+
+            zone.addEventListener('drop', function(e) {
+                e.preventDefault();
+                zone.classList.remove('drag-over');
+                handleFiles(e.dataTransfer.files, type);
+            });
+        }
+
+        function initializeButtons() {
+            uploadBtn.addEventListener('click', startAnalysis);
+            document.getElementById('newAnalysis').addEventListener('click', resetInterface);
+            document.getElementById('retryAnalysis').addEventListener('click', resetInterface);
+            document.getElementById('downloadExcel').addEventListener('click', () => downloadFile('excel'));
+            document.getElementById('downloadPDF').addEventListener('click', () => downloadFile('pdf'));
+            document.getElementById('updatePDF').addEventListener('click', updatePDFPackage);
+        }
+
+        function handleFiles(files, type) {
+            const newFiles = Array.from(files);
+            
+            switch(type) {
+                case 'rentRoll':
+                    rentRollFiles = [...rentRollFiles, ...newFiles];
+                    displayFiles('rentRollFiles', rentRollFiles, 'rentRoll');
+                    break;
+                case 't12':
+                    t12Files = [...t12Files, ...newFiles];
+                    displayFiles('t12Files', t12Files, 't12');
+                    break;
+                case 'additional':
+                    additionalFiles = [...additionalFiles, ...newFiles];
+                    displayFiles('additionalFiles', additionalFiles, 'additional');
+                    break;
+            }
+            
+            updateUploadSummary();
+            validateForm();
+        }
+
+        function displayFiles(containerId, files, type) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = '';
+            
+            files.forEach((file, index) => {
+                const fileDiv = document.createElement('div');
+                fileDiv.className = 'flex items-center justify-between bg-white p-2 rounded border shadow-sm';
+                
+                let iconColor = 'text-red-500';
+                if (type === 'rentRoll') iconColor = 'text-blue-500';
+                else if (type === 't12') iconColor = 'text-green-500';
+                
+                fileDiv.innerHTML = `
+                    <div class="flex items-center">
+                        <i class="fas fa-file-pdf ${iconColor} mr-2"></i>
+                        <div>
+                            <div class="text-sm text-gray-700 font-medium">${file.name}</div>
+                            <div class="text-xs text-gray-500">${(file.size / 1024 / 1024).toFixed(1)} MB</div>
+                        </div>
+                    </div>
+                    <button onclick="removeFile('${type}', ${index})" class="text-red-500 hover:text-red-700 p-1">
+                        <i class="fas fa-times"></i>
+                    </button>
+                `;
+                container.appendChild(fileDiv);
+            });
+        }
+
+        function removeFile(type, index) {
+            switch(type) {
+                case 'rentRoll':
+                    rentRollFiles.splice(index, 1);
+                    displayFiles('rentRollFiles', rentRollFiles, 'rentRoll');
+                    break;
+                case 't12':
+                    t12Files.splice(index, 1);
+                    displayFiles('t12Files', t12Files, 't12');
+                    break;
+                case 'additional':
+                    additionalFiles.splice(index, 1);
+                    displayFiles('additionalFiles', additionalFiles, 'additional');
+                    break;
+            }
+            updateUploadSummary();
+            validateForm();
+        }
+
+        function updateUploadSummary() {
+            const totalFiles = rentRollFiles.length + t12Files.length + additionalFiles.length;
+            
+            document.getElementById('rentRollCount').textContent = rentRollFiles.length;
+            document.getElementById('t12Count').textContent = t12Files.length;
+            document.getElementById('additionalCount').textContent = additionalFiles.length;
+            
+            if (totalFiles > 0) {
+                uploadSummary.classList.remove('hidden');
+            } else {
+                uploadSummary.classList.add('hidden');
+            }
+        }
+
+        function validateForm() {
+            const propertyName = document.getElementById('propertyName').value.trim();
+            const propertyAddress = document.getElementById('propertyAddress').value.trim();
+            const hasRequiredFiles = rentRollFiles.length > 0 || t12Files.length > 0;
+            
+            uploadBtn.disabled = !(propertyName && propertyAddress && hasRequiredFiles);
+            
+            // Update button text based on available files
+            if (hasRequiredFiles) {
+                uploadBtn.innerHTML = '<i class="fas fa-rocket mr-2"></i>Start Analysis';
+            } else {
+                uploadBtn.innerHTML = '<i class="fas fa-upload mr-2"></i>Upload Required Documents';
+            }
+        }
+
+        // Form validation on input
+        document.getElementById('propertyName').addEventListener('input', validateForm);
+        document.getElementById('propertyAddress').addEventListener('input', validateForm);
+
+        async function startAnalysis() {
+            const formData = new FormData();
+            
+            // Add property information
+            formData.append('property_name', document.getElementById('propertyName').value);
+            formData.append('property_address', document.getElementById('propertyAddress').value);
+            formData.append('transaction_type', document.getElementById('transactionType').value);
+            formData.append('is_bridge_loan', document.getElementById('bridgeLoan').checked);
+            
+            // Add files with type information
+            rentRollFiles.forEach(file => {
+                formData.append('files', file);
+                formData.append('file_types', 'rent_roll');
+            });
+            
+            t12Files.forEach(file => {
+                formData.append('files', file);
+                formData.append('file_types', 't12');
+            });
+            
+            additionalFiles.forEach(file => {
+                formData.append('files', file);
+                formData.append('file_types', 'additional');
+            });
+
+            try {
+                // Show progress section
+                showSection('progress');
+                
+                // Upload files and start processing
+                const response = await fetch('/api/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    currentSessionId = result.session_id;
+                    startProgressPolling();
+                } else {
+                    throw new Error(result.detail || 'Upload failed');
+                }
+            } catch (error) {
+                showError(error.message);
+            }
+        }
+
+        function startProgressPolling() {
+            progressInterval = setInterval(async () => {
+                try {
+                    const response = await fetch(`/api/status/${currentSessionId}`);
+                    const status = await response.json();
+                    
+                    updateProgress(status);
+                    
+                    if (status.status === 'completed') {
+                        clearInterval(progressInterval);
+                        showResults(status.results);
+                    } else if (status.status === 'error') {
+                        clearInterval(progressInterval);
+                        showError(status.error_message || 'Processing failed');
+                    }
+                } catch (error) {
+                    clearInterval(progressInterval);
+                    showError('Failed to get processing status');
+                }
+            }, 1000);
+        }
+
+        function updateProgress(status) {
+            // Update progress bar
+            document.getElementById('progressBar').style.width = `${status.progress_percentage}%`;
+            document.getElementById('progressPercentage').textContent = `${Math.round(status.progress_percentage)}%`;
+            
+            // Update step information
+            document.getElementById('currentStep').textContent = status.step_name;
+            document.getElementById('stepMessage').textContent = status.message;
+            
+            // Update step indicators
+            document.querySelectorAll('.step-indicator').forEach((indicator, index) => {
+                const stepNumber = index + 1;
+                indicator.classList.remove('step-active', 'step-completed');
+                
+                if (stepNumber < status.current_step) {
+                    indicator.classList.add('step-completed');
+                } else if (stepNumber === status.current_step) {
+                    indicator.classList.add('step-active');
+                }
+            });
+        }
+
+        async function updatePDFPackage() {
+            if (!currentSessionId) {
+                showError('No active session found');
+                return;
+            }
+
+            const pdfNotes = document.getElementById('pdfNotes').value;
+            const updateBtn = document.getElementById('updatePDF');
+            
+            try {
+                // Show loading state
+                updateBtn.disabled = true;
+                updateBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Updating PDF...';
+                
+                // Send update request
+                const formData = new FormData();
+                formData.append('pdf_notes', pdfNotes);
+                
+                const response = await fetch(`/api/update-pdf/${currentSessionId}`, {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    // Show success message
+                    updateBtn.innerHTML = '<i class="fas fa-check mr-2"></i>PDF Updated!';
+                    updateBtn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
+                    updateBtn.classList.add('bg-green-600', 'hover:bg-green-700');
+                    
+                    // Reset after 2 seconds
+                    setTimeout(() => {
+                        updateBtn.innerHTML = '<i class="fas fa-sync-alt mr-2"></i>Update PDF Package';
+                        updateBtn.classList.remove('bg-green-600', 'hover:bg-green-700');
+                        updateBtn.classList.add('bg-blue-600', 'hover:bg-blue-700');
+                        updateBtn.disabled = false;
+                    }, 2000);
+                    
+                    // Show notification
+                    showSuccess('PDF package updated with your notes! You can now download the updated version.');
+                    
+                } else {
+                    throw new Error(result.detail || 'Failed to update PDF');
+                }
+                
+            } catch (error) {
+                updateBtn.innerHTML = '<i class="fas fa-sync-alt mr-2"></i>Update PDF Package';
+                updateBtn.disabled = false;
+                showError(`Failed to update PDF: ${error.message}`);
+            }
+        }
+
+        function showResults(results) {
+            showSection('results');
+            
+            // Update results display with dynamic data
+            document.getElementById('resultPropertyName').textContent = results.property_info.property_name;
+            
+            // Financial metrics
+            const noi = results.underwriting_summary?.noi_analysis?.net_operating_income || 0;
+            const capRate = results.underwriting_summary?.valuation?.cap_rate || 0;
+            const propertyValue = results.underwriting_summary?.valuation?.estimated_value || 0;
+            const cashReturn = results.underwriting_summary?.valuation?.cash_on_cash_return || 0;
+            const expenseRatio = results.underwriting_summary?.noi_analysis?.expense_ratio || 0;
+            const grossIncome = results.underwriting_summary?.noi_analysis?.effective_gross_income || 0;
+            const units = results.file_analysis?.estimated_units || 0;
+            const qualityScore = results.file_analysis?.quality_score || 0;
+            
+            // Update display
+            document.getElementById('resultNOI').textContent = `$${noi.toLocaleString()}`;
+            document.getElementById('resultCapRate').textContent = `${capRate}%`;
+            document.getElementById('resultPropertyValue').textContent = `$${propertyValue.toLocaleString()}`;
+            document.getElementById('resultCashReturn').textContent = `${cashReturn}%`;
+            document.getElementById('resultExpenseRatio').textContent = `${expenseRatio}%`;
+            document.getElementById('resultGrossIncome').textContent = `$${grossIncome.toLocaleString()}`;
+            document.getElementById('resultUnits').textContent = units.toLocaleString();
+            document.getElementById('resultQualityScore').textContent = `${qualityScore}/100`;
+            document.getElementById('resultFlags').textContent = results.flags_count || 0;
+        }
+
+        async function downloadFile(fileType) {
+            try {
+                const response = await fetch(`/api/download/${currentSessionId}/${fileType}`);
+                
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = response.headers.get('content-disposition')?.split('filename=')[1] || `underwriting.${fileType}`;
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    document.body.removeChild(a);
+                } else {
+                    throw new Error('Download failed');
+                }
+            } catch (error) {
+                alert('Download failed. Please try again.');
+            }
+        }
+
+        function showSection(sectionName) {
+            // Hide all sections
+            uploadSection.classList.add('hidden');
+            progressSection.classList.add('hidden');
+            resultsSection.classList.add('hidden');
+            errorSection.classList.add('hidden');
+            
+            // Show target section with animation
+            const targetSection = document.getElementById(`${sectionName}Section`);
+            targetSection.classList.remove('hidden');
+            targetSection.classList.add('slide-in');
+        }
+
+        function showError(message) {
+            showSection('error');
+            document.getElementById('errorMessage').textContent = message;
+        }
+
+        function showSuccess(message) {
+            // Create and show success notification
+            const notification = document.createElement('div');
+            notification.className = 'fixed top-4 right-4 bg-green-600 text-white px-6 py-3 rounded-md shadow-lg z-50 transform translate-x-full transition-transform duration-300';
+            notification.innerHTML = `
+                <div class="flex items-center">
+                    <i class="fas fa-check-circle mr-2"></i>
+                    <span>${message}</span>
+                </div>
+            `;
+            
+            document.body.appendChild(notification);
+            
+            // Slide in
+            setTimeout(() => {
+                notification.classList.remove('translate-x-full');
+            }, 100);
+            
+            // Slide out and remove after 4 seconds
+            setTimeout(() => {
+                notification.classList.add('translate-x-full');
+                setTimeout(() => {
+                    document.body.removeChild(notification);
+                }, 300);
+            }, 4000);
+        }
+
+        function resetInterface() {
+            // Clear session
+            currentSessionId = null;
+            rentRollFiles = [];
+            t12Files = [];
+            additionalFiles = [];
+            
+            // Clear progress interval
+            if (progressInterval) {
+                clearInterval(progressInterval);
+                progressInterval = null;
+            }
+            
+            // Reset form
+            document.getElementById('propertyName').value = '';
+            document.getElementById('propertyAddress').value = '';
+            document.getElementById('transactionType').value = 'refinance';
+            document.getElementById('bridgeLoan').checked = false;
+            rentRollInput.value = '';
+            t12Input.value = '';
+            additionalInput.value = '';
+            
+            // Clear file displays
+            document.getElementById('rentRollFiles').innerHTML = '';
+            document.getElementById('t12Files').innerHTML = '';
+            document.getElementById('additionalFiles').innerHTML = '';
+            uploadSummary.classList.add('hidden');
+            
+            // Reset progress indicators
+            document.querySelectorAll('.step-indicator').forEach(indicator => {
+                indicator.classList.remove('step-active', 'step-completed');
+            });
+            document.getElementById('progressBar').style.width = '0%';
+            
+            // Show upload section
+            showSection('upload');
+            validateForm();
+        }
+    </script>
+</body>
+</html>
