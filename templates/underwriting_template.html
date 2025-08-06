@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Underwriting Analysis - {{property_name}}</title>
+  <style>
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 20px;
+  background-color: #f0f0f0;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  min-height: 100vh;
+  box-sizing: border-box;
+}
+
+.spreadsheet-template {
+  width: 1200px; /* Fixed width to match spreadsheet feel */
+  border: 1px solid #000;
+  background-color: #fff;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  position: relative; /* For positioning debt-yield-text */
+}
+
+/* Top Section - Headers and Details */
+.top-section {
+  display: flex;
+  flex-direction: column;
+  border-bottom: 1px solid #000;
+}
+
+.top-headers {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  border-bottom: 1px solid #000;
+}
+
+.header-box {
+  background-color: #333;
+  color: #fff;
+  padding: 8px 10px;
+  font-weight: bold;
+  text-align: center;
+  border-right: 1px solid #000;
+  font-size: 14px;
+}
+
+.header-box:last-child {
+  border-right: none;
+}
+
+.top-details-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.detail-group {
+  padding: 5px 0;
+  border-right: 1px solid #000;
+  display: flex;
+  flex-direction: column;
+}
+
+.detail-group:last-child {
+  border-right: none;
+}
+
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 2px 10px;
+  border-bottom: 1px solid #eee; /* Light border for rows */
+  font-size: 12px;
+}
+
+.detail-row:last-child {
+  border-bottom: none;
+}
+
+.detail-row .label {
+  font-weight: normal;
+  color: #333;
+}
+
+.detail-row .value {
+  font-weight: bold;
+  color: #000;
+  text-align: right;
+}
+
+.highlight-green {
+  background-color: #92D050; /* Green highlight */
+  padding: 0 4px;
+  margin: -2px -4px; /* Adjust to make background fill cell */
+}
+
+/* Main Data Section */
+.main-data-section {
+  display: grid;
+  grid-template-columns: 1.5fr repeat(9, 1fr); /* 10 columns: 1 for label, 9 for data */
+  border-top: 1px solid #000;
+}
+
+.data-cell {
+  padding: 4px 8px;
+  border: 1px solid #000;
+  border-width: 0 1px 1px 0; /* Top, right, bottom, left */
+  font-size: 12px;
+  text-align: right;
+  white-space: nowrap; /* Prevent text wrapping in cells */
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.data-cell.label-cell {
+  text-align: left;
+  font-weight: normal;
+  background-color: #f8f8f8; /* Light background for labels */
+}
+
+.data-cell.header-cell {
+  background-color: #333;
+  color: #fff;
+  font-weight: bold;
+  text-align: center;
+}
+
+.data-header-row-1,
+.data-header-row-2 {
+  display: contents; /* Allows children to be direct grid items */
+}
+
+.data-header-row-1 .data-cell {
+  border-top: 1px solid #000;
+}
+
+.data-header-row-2 .data-cell {
+  border-top: 1px solid #000;
+}
+
+.data-cell.span-2 {
+  grid-column: span 2;
+}
+
+.data-cell.span-3 {
+  grid-column: span 3;
+}
+
+/* Specific row styling */
+.data-row {
+  display: contents; /* Makes children direct grid items */
+}
+
+.data-row .data-cell {
+  border-top: 1px solid #000;
+}
+
+.data-row:first-child .data-cell {
+  border-top: none; /* Remove top border for the very first data row */
+}
+
+.data-row.total-row .data-cell {
+  font-weight: bold;
+}
+
+.data-row.bottom-row .data-cell {
+  font-weight: bold;
+}
+
+/* Background colors */
+.yellow-bg {
+  background-color: #FFFF00; /* Pure yellow */
+  font-weight: bold;
+}
+
+.highlight-orange {
+  background-color: #FFD966; /* Light orange/yellow */
+  font-weight: bold;
+}
+
+.red-bg {
+  background-color: #FFCCCC; /* Light red for negative values/adjustments */
+}
+
+.red-text {
+  color: #FF0000; /* Red text for negative labels */
+}
+
+.empty-input {
+  background-color: #f0f0f0; /* Light gray for empty input cells */
+}
+
+/* Debt Yield Text */
+.debt-yield-text {
+  position: absolute;
+  right: -100px; /* Adjust as needed to position outside the main template */
+  top: calc(100% - 50px); /* Position near the bottom right */
+  font-size: 14px;
+  font-weight: bold;
+  white-space: nowrap;
+}
+
+@media print {
+  body {
+    background-color: white;
+    padding: 0;
+  }
+  .spreadsheet-template {
+    box-shadow: none;
+    width: 100%;
+    max-width: none;
+  }
+}
+  </style>
+</head>
+<body>
+  <div class="spreadsheet-template">
+      <div class="top-section">
+          <div class="top-headers">
+              <div class="header-box">PROPERTY CHARACTERISTICS</div>
+              <div class="header-box">LOAN TERMS</div>
+              <div class="header-box">UNDERWRITING</div>
+          </div>
+
+          <div class="top-details-grid">
+              <div class="detail-group property-char">
+                  <div class="detail-row"><span class="label">Borrower</span><span class="value">{{borrower}}</span></div>
+                  <div class="detail-row"><span class="label">Property Name</span><span class="value">{{property_name}}</span></div>
+                  <div class="detail-row"><span class="label">Address</span><span class="value">{{property_address}}</span></div>
+                  <div class="detail-row"><span class="label">City, State, Zip</span><span class="value">{{city_state_zip}}</span></div>
+                  <div class="detail-row"><span class="label">Property Type</span><span class="value">{{property_type}}</span></div>
+                  <div class="detail-row"><span class="label">Units</span><span class="value">{{unit_count}}</span></div>
+                  <div class="detail-row"><span class="label">Type of Transaction</span><span class="value">{{transaction_type}}</span></div>
+                  <div class="detail-row"><span class="label">Cost Basis</span><span class="value">${{cost_basis}}</span></div>
+              </div>
+              <div class="detail-group loan-terms">
+                  <div class="detail-row"><span class="label">Loan Amount</span><span class="value">${{loan_amount}}</span></div>
+                  <div class="detail-row"><span class="label">Interest Rate</span><span class="value">{{interest_rate}}%</span></div>
+                  <div class="detail-row"><span class="label">Loan Program</span><span class="value">{{loan_program}}</span></div>
+                  <div class="detail-row"><span class="label">LTV/LTC</span><span class="value">{{ltv}}%</span></div>
+                  <div class="detail-row"><span class="label">Interest Only</span><span class="value">{{interest_only}}</span></div>
+                  <div class="detail-row"><span class="label">I/O Term</span><span class="value">{{io_term}}</span></div>
+                  <div class="detail-row"><span class="label">Value</span><span class="value">${{property_value}}</span></div>
+              </div>
+              <div class="detail-group underwriting">
+                  <div class="detail-row"><span class="label">Vacancy</span><span class="value">{{vacancy_rate}}%</span></div>
+                  <div class="detail-row"><span class="label">Mgmt Fee</span><span class="value">{{mgmt_fee}}%</span></div>
+                  <div class="detail-row"><span class="label">R & M</span><span class="value">${{rm_per_unit}}</span></div>
+                  <div class="detail-row"><span class="label">Residential</span><span class="value">${{residential_per_unit}}</span></div>
+                  <div class="detail-row"><span class="label">Key Reserve</span><span class="value">{{key_reserve}}</span></div>
+                  <div class="detail-row"><span class="label">Cap Rate</span><span class="value">{{cap_rate}}%</span></div>
+              </div>
+          </div>
+      </div>
+
+      <div class="main-data-section">
+          <div class="data-header-row-1">
+              <div class="data-cell label-cell"></div>
+              <div class="data-cell header-cell span-2"></div>
+              <div class="data-cell header-cell span-2">T-12</div>
+              <div class="data-cell header-cell span-3">T-5</div>
+              <div class="data-cell header-cell span-2">UW</div>
+          </div>
+          <div class="data-header-row-2">
+              <div class="data-cell label-cell yellow-bg">REVENUE</div>
+              <div class="data-cell header-cell">Total</div>
+              <div class="data-cell header-cell">Per Unit</div>
+              <div class="data-cell header-cell">Total</div>
+              <div class="data-cell header-cell">Per Unit</div>
+              <div class="data-cell header-cell">Total</div>
+              <div class="data-cell header-cell">Annualized</div>
+              <div class="data-cell header-cell">Per Unit</div>
+              <div class="data-cell header-cell">Total</div>
+              <div class="data-cell header-cell">Per Unit</div>
+          </div>
+
+          <!-- Revenue Data -->
+          <div class="data-row">
+              <div class="data-cell label-cell">Rental Income</div>
+              <div class="data-cell empty-input">$0</div>
+              <div class="data-cell empty-input">$0</div>
+              <div class="data-cell">${{t12_rental_income}}</div>
+              <div class="data-cell">${{t12_rental_per_unit}}</div>
+              <div class="data-cell">${{t5_rental_income}}</div>
+              <div class="data-cell highlight-orange">${{t5_annualized_rental}}</div>
+              <div class="data-cell">${{t5_rental_per_unit}}</div>
+              <div class="data-cell">${{uw_rental_income}}</div>
+              <div class="data-cell">${{uw_rental_per_unit}}</div>
+          </div>
+          <div class="data-row">
+              <div class="data-cell label-cell">Admin Income</div>
+              <div class="data-cell empty-input">$0</div>
+              <div class="data-cell empty-input">$0</div>
+              <div class="data-cell">${{t12_admin_income}}</div>
+              <div class="data-cell">${{t12_admin_per_unit}}</div>
+              <div class="data-cell">${{t5_admin_income}}</div>
+              <div class="data-cell highlight-orange">${{t5_annualized_admin}}</div>
+              <div class="data-cell">${{t5_admin_per_unit}}</div>
+              <div class="data-cell">${{uw_admin_income}}</div>
+              <div class="data-cell">${{uw_admin_per_unit}}</div>
+          </div>
+          <div class="data-row">
+              <div class="data-cell label-cell">Laundry</div>
+              <div class="data-cell empty-input">$0</div>
+              <div class="data-cell empty-input">$0</div>
+              <div class="data-cell">${{t12_laundry}}</div>
+              <div class="data-cell">${{t12_laundry_per_unit}}</div>
+              <div class="data-cell">${{t5_laundry}}</div>
+              <div class="data-cell highlight-orange">${{t5_annualized_laundry}}</div>
+              <div class="data-cell">${{t5_laundry_per_unit}}</div>
+              <div class="data-cell">${{uw_laundry}}</div>
+              <div class="data-cell">${{uw_laundry_per_unit}}</div>
+          </div>
+          <div class="data-row">
+              <div class="data-cell label-cell">RUBS</div>
+              <div class="data-cell empty-input">$0</div>
+              <div class="data-cell empty-input">$0</div>
+              <div class="data-cell">${{t12_rubs}}</div>
+              <div class="data-cell">${{t12_rubs_per_unit}}</div>
+              <div class="data-cell">${{t5_rubs}}</div>
+              <div class="data-cell highlight-orange">${{t5_annualized_rubs}}</div>
+              <div class="data-cell">${{t5_rubs_per_unit}}</div>
+              <div class="data-cell">${{uw_rubs}}</div>
+              <div class="data-cell">${{uw_rubs_per_unit}}</div>
+          </div>
+          <div class="data-row total-row">
+              <div class="data-cell label-cell">Total Pot. Gross Income (PGI)</div>
+              <div class="data-cell empty-input">$0</div>
+              <div class="data-cell empty-input">$0</div>
+              <div class="data-cell">${{t12_gpi}}</div>
+              <div class="data-cell">${{t12_gpi_per_unit}}</div>
+              <div class="data-cell">${{t5_gpi}}</div>
+              <div class="data-cell highlight-orange">${{t5_annualized_gpi}}</div>
+              <div class="data-cell">${{t5_gpi_per_unit}}</div>
+              <div class="data-cell">${{uw_gpi}}</div>
+              <div class="data-cell">${{uw_gpi_per_unit}}</div>
+          </div>
+
+          <div class="data-row">
+              <div class="data-cell label-cell red-text">Less: Vacancy & Collection</div>
+              <div class="data-cell empty-input red-bg">$0</div>
+              <div class="data-cell empty-input red-bg">$0</div>
+              <div class="data-cell red-bg">${{t12_vacancy}}</div>
+              <div class="data-cell red-bg">${{t12_vacancy_per_unit}}</div>
+              <div class="data-cell red-bg">${{t5_vacancy}}</div>
+              <div class="data-cell red-bg">${{t5_annualized_vacancy}}</div>
+              <div class="data-cell red-bg">${{t5_vacancy_per_unit}}</div>
+              <div class="data-cell red-bg">${{uw_vacancy}}</div>
+              <div class="data-cell red-bg">${{uw_vacancy_per_unit}}</div>
+          </div>
+          <div class="data-row">
+              <div class="data-cell label-cell red-text">Less: Adjustments/concessions</div>
+              <div class="data-cell empty-input red-bg">$0</div>
+              <div class="data-cell empty-input red-bg">$0</div>
+              <div class="data-cell red-bg">${{t12_adjustments}}</div>
+              <div class="data-cell red-bg">${{t12_adjustments_per_unit}}</div>
+              <div class="data-cell red-bg">${{t5_adjustments}}</div>
+              <div class="data-cell red-bg">${{t5_annualized_adjustments}}</div>
+              <div class="data-cell red-bg">${{t5_adjustments_per_unit}}</div>
+              <div class="data-cell red-bg">${{uw_adjustments}}</div>
+              <div class="data-cell red-bg">${{uw_adjustments_per_unit}}</div>
+          </div>
+
+          <div class="data-row total-row">
+              <div class="data-cell label-cell yellow-bg">Total Eff Gross Income (EGI)</div>
+              <div class="data-cell empty-input">$0</div>
+              <div class="data-cell empty-input">$0</div>
+              <div class="data-cell">${{t12_egi}}</div>
+              <div class="data-cell">${{t12_egi_per_unit}}</div>
+              <div class="data-cell">${{t5_egi}}</div>
+              <div class="data-cell highlight-orange">${{t5_annualized_egi}}</div>
+              <div class="data-cell">${{t5_egi_per_unit}}</div>
+              <div class="data-cell">${{uw_egi}}</div>
+              <div class="data-cell">${{uw_egi_per_unit}}</div>
+          </div>
+
+          <!-- Expenses -->
+          <div class="data-header-row-2">
+              <div class="data-cell label-cell yellow-bg">EXPENSES</div>
+              <div class="data-cell header-cell"></div>
+              <div class="data-cell header-cell"></div>
+              <div class="data-cell header-cell"></div>
+              <div class="data-cell header-cell"></div>
+              <div class="data-cell header-cell"></div>
+              <div class="data-cell header-cell"></div>
+              <div class="data-cell header-cell"></div>
+              <div class="data-cell header-cell"></div>
+              <div class="data-cell header-cell"></div>
+          </div>
+          <div class="data-header-row-2">
+              <div class="data-cell label-cell yellow-bg">FIXED EXPENSES</div>
+              <div class="data-cell header-cell"></div>
+              <div class="data-cell header-cell"></div>
+              <div class="data-cell header-cell"></div>
+              <div class="data-cell header-cell"></div>
+              <div class="data-cell header-cell"></div>
+              <div class="data-cell header-cell"></div>
+              <div class="data-cell header-cell"></div>
+              <div class="data-cell header-cell"></div>
+              <div class="data-cell header-cell"></div>
+          </div>
+
+          <!-- Fixed Expenses Data -->
+          <div class="data-row">
+              <div class="data-cell label-cell">Real Estate Taxes</div>
+              <div class="data-cell empty-input">$0</div>
+              <div class="data-cell empty-input">$0</div>
+              <div class="data-cell">${{t12_taxes}}</div>
+              <div class="data-cell">${{t12_taxes_per_unit}}</div>
+              <div class="data-cell">${{t5_taxes}}</div>
+              <div class="data-cell highlight-orange">${{t5_annualized_taxes}}</div>
+              <div class="data-cell">${{t5_taxes_per_unit}}</div>
+              <div class="data-cell">${{uw_taxes}}</div>
+              <div class="data-cell">${{uw_taxes_per_unit}}</div>
+          </div>
+          <div class="data-row">
+              <div class="data-cell label-cell">Insurance</div>
+              <div class="data-cell empty-input">$0</div>
+              <div class="data-cell empty-input">$0</div>
+              <div class="data-cell">${{t12_insurance}}</div>
+              <div class="data-cell">${{t12_insurance_per_unit}}</div>
+              <div class="data-cell">${{t5_insurance}}</div>
+              <div class="data-cell highlight-orange">${{t5_annualized_insurance}}</div>
+              <div class="data-cell">${{t5_insurance_per_unit}}</div>
+              <div class="data-cell">${{uw_insurance}}</div>
+              <div class="data-cell">${{uw_insurance_per_unit}}</div>
+          </div>
+          <div class="data-row total-row">
+              <div class="data-cell label-cell">Total Fixed Expenses</div>
+              <div class="data-cell empty-input">$0</div>
+              <div class="data-cell empty-input">$0</div>
+              <div class="data-cell">${{t12_fixed_total}}</div>
+              <div class="data-cell">${{t12_fixed_per_unit}}</div>
+              <div class="data-cell">${{t5_fixed_total}}</div>
+              <div class="data-cell highlight-orange">${{t5_annualized_fixed}}</div>
+              <div class="data-cell">${{t5_fixed_per_unit}}</div>
+              <div class="data-cell">${{uw_fixed_total}}</div>
+              <div class="data-cell">${{uw_fixed_per_unit}}</div>
+          </div>
+
+          <!-- Variable Expenses with all subcategories... -->
+          <!-- This continues with the same pattern for all expense categories -->
+
+          <div class="data-row total-row">
+              <div class="data-cell label-cell yellow-bg">NET OPERATING INCOME</div>
+              <div class="data-cell empty-input">$0</div>
+              <div class="data-cell empty-input">$0</div>
+              <div class="data-cell">${{t12_noi}}</div>
+              <div class="data-cell">${{t12_noi_per_unit}}</div>
+              <div class="data-cell">${{t5_noi}}</div>
+              <div class="data-cell highlight-orange">${{t5_annualized_noi}}</div>
+              <div class="data-cell">${{t5_noi_per_unit}}</div>
+              <div class="data-cell">${{uw_noi}}</div>
+              <div class="data-cell">${{uw_noi_per_unit}}</div>
+          </div>
+
+          <div class="data-row">
+              <div class="data-cell label-cell">Cap X - Replacement Reserves</div>
+              <div class="data-cell empty-input red-bg">$0</div>
+              <div class="data-cell empty-input red-bg">$0</div>
+              <div class="data-cell red-bg">${{t12_capex}}</div>
+              <div class="data-cell red-bg">${{t12_capex_per_unit}}</div>
+              <div class="data-cell red-bg">${{t5_capex}}</div>
+              <div class="data-cell red-bg">${{t5_annualized_capex}}</div>
+              <div class="data-cell red-bg">${{t5_capex_per_unit}}</div>
+              <div class="data-cell red-bg">${{uw_capex}}</div>
+              <div class="data-cell red-bg">${{uw_capex_per_unit}}</div>
+          </div>
+
+          <div class="data-row total-row">
+              <div class="data-cell label-cell yellow-bg">Net Cash Flow</div>
+              <div class="data-cell empty-input">$0</div>
+              <div class="data-cell empty-input">$0</div>
+              <div class="data-cell">${{t12_cash_flow}}</div>
+              <div class="data-cell">${{t12_cash_flow_per_unit}}</div>
+              <div class="data-cell">${{t5_cash_flow}}</div>
+              <div class="data-cell highlight-orange">${{t5_annualized_cash_flow}}</div>
+              <div class="data-cell">${{t5_cash_flow_per_unit}}</div>
+              <div class="data-cell">${{uw_cash_flow}}</div>
+              <div class="data-cell">${{uw_cash_flow_per_unit}}</div>
+          </div>
+
+          <!-- Bottom Section -->
+          <div class="data-row bottom-row">
+              <div class="data-cell label-cell yellow-bg">Annual Debt Service</div>
+              <div class="data-cell empty-input">${{debt_service}}</div>
+              <div class="data-cell empty-input"></div>
+              <div class="data-cell">${{debt_service}}</div>
+              <div class="data-cell"></div>
+              <div class="data-cell">${{debt_service}}</div>
+              <div class="data-cell"></div>
+              <div class="data-cell"></div>
+              <div class="data-cell">${{debt_service}}</div>
+              <div class="data-cell"></div>
+          </div>
+          <div class="data-row bottom-row">
+              <div class="data-cell label-cell yellow-bg">Actual DSCR</div>
+              <div class="data-cell empty-input highlight-green">0.00</div>
+              <div class="data-cell empty-input"></div>
+              <div class="data-cell highlight-green">{{t12_dscr}}</div>
+              <div class="data-cell"></div>
+              <div class="data-cell highlight-green">{{t5_dscr}}</div>
+              <div class="data-cell"></div>
+              <div class="data-cell"></div>
+              <div class="data-cell highlight-green">{{uw_dscr}}</div>
+              <div class="data-cell"></div>
+          </div>
+      </div>
+      <div class="debt-yield-text">Debt Yield: <br/>{{debt_yield}}%</div>
+  </div>
+</body>
+</html>
